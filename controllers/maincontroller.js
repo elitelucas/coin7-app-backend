@@ -8,7 +8,7 @@ const { bltelecomsAPI } = require('../utils/bltelecomsAPI.js');
 
 exports.ping = async (req, res) => {
     try {
-        return res.json({ type: 'pong', message: 'Coin7 API 1.0' })
+        return res.json({ type: 'pong', message: 'Coin7 API 1.0 - dev branch' })
     } catch (error) {
         return res.json({ type: 'error', message: error.message })
     }
