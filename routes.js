@@ -24,13 +24,17 @@ router.post('/ping', maincontroller.ping);
 router.post('/temp', maincontroller.temp);
 
 router.post('/mining/start', maincontroller.mining_start);
-router.post('/mining/end', maincontroller.mining_end);
+router.post('/mining/stop', maincontroller.mining_stop);
 router.post('/mining/get', maincontroller.mining_get);
 
 
 
 module.exports = (app) => {
   app.use('/api', router);
+
+  app.get('/test', (req, res) => {
+    res.sendFile(__dirname + '/public/test.html');
+  });
 
   app.use((req, res, next) => {
     const error = new Error('Not found');

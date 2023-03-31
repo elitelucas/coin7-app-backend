@@ -1,8 +1,8 @@
 module.exports = {
   port: process.env.PORT || 8000,
   db: {
-    prod: process.env.DATABASE_URL || 'mongodb://127.0.0.1/argon',
-    test: 'mongodb://127.0.0.1/stackoverflow-test',
+    prod: process.env.DATABASE_URL || 'mongodb://127.0.0.1/coin7',
+    test: 'mongodb://127.0.0.1/coin7',
     options: {
       useNewUrlParser: true,
       useUnifiedTopology: true,
