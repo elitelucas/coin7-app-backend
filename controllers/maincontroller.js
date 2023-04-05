@@ -5,6 +5,8 @@ const User = require('../models/user.js');
 const Advertise = require('../models/Advertise');
 const MiningTransaction = require('../models/MiningTransaction');
 const { bltelecomsAPI } = require('../utils/bltelecomsAPI.js');
+const { LEVELS } = require('./config')
+
 
 exports.ping = async (req, res) => {
     try {
@@ -16,10 +18,12 @@ exports.ping = async (req, res) => {
 
 exports.temp = async (req, res) => {
     try {
-        var ddd = new Advertise({ title: 'cc' })
-        await ddd.save();
+        // var ddd = new Advertise({ title: 'cc' })
+        // await ddd.save();
 
-        return res.json({ result: true, data: 'done' })
+        console.log(LEVELS);
+
+        return res.json({ result: true, data: LEVELS })
     } catch (error) {
         return res.json({ result: false, message: error.message })
     }
@@ -77,6 +81,22 @@ exports.mining_get = async (req, res) => {
         var { user_id } = req.body
         var records = await MiningTransaction.find({ user_id });
         return res.json({ result: true, data: records })
+    } catch (error) {
+        return res.json({ result: false, message: error.message })
+    }
+}
+
+
+exports.set_referrer = async (req, res) => {
+    try {
+        var { user_id, referrer } = req.body
+        const referrerData = await User.findOne({ username: referrer });
+
+        if (!referrerData) { return res.json({ result: false, message: 'Can not find referrer.' }); }
+
+        await User.updateOne({ _id: user_id }, { referrer_id: referrerData.id }, { upsert: true });
+
+        return res.json({ result: true, data: 'done' })
     } catch (error) {
         return res.json({ result: false, message: error.message })
     }

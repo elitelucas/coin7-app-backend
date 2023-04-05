@@ -27,7 +27,7 @@ router.post('/mining/start', maincontroller.mining_start);
 router.post('/mining/stop', maincontroller.mining_stop);
 router.post('/mining/get', maincontroller.mining_get);
 
-
+router.post('/mlm/set_referrer', maincontroller.set_referrer);
 
 module.exports = (app) => {
   app.use('/api', router);

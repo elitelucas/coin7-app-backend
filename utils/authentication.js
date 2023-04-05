@@ -4,9 +4,6 @@ const config = require('../config');
 
 const createToken = (user) => {
   // Sign the JWT
-  if (!user.role) {
-    throw new Error('No user role specified');
-  }
   return jwt.sign(
     {
       id: user._id,

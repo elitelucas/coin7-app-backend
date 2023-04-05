@@ -7,13 +7,13 @@ const userModel = new Schema({
   email: { type: String, required: true },
   phone: { type: String, },
   address: { type: String, },
-  role: { type: String, required: true, default: 'user' },
   profilePhoto: {
     type: String,
     default: function () {
       return `https://secure.gravatar.com/avatar/${this._id}?s=90&d=identicon`;
     }
   },
+  referrer_id: { type: String, },
   created: { type: Date, default: Date.now }
 });
 

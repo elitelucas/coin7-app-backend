@@ -5,45 +5,39 @@ const { body, validationResult } = require('express-validator');
 const { createToken, hashPassword, verifyPassword } = require('../utils/authentication');
 
 exports.signup = async (req, res) => {
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    const errors = result.array({ onlyFirstError: true });
-    return res.status(422).json({ errors });
-  }
+  // const result = validationResult(req);
+  // if (!result.isEmpty()) {
+  //   const errors = result.array({ onlyFirstError: true });
+  //   return res.status(422).json({ errors });
+  // }
 
   try {
-    const { username } = req.body;
+    const { username, password, email, referrer } = req.body;
 
-    const hashedPassword = await hashPassword(req.body.password);
-
-    const userData = {
-      username: username.toLowerCase(),
-      password: hashedPassword,
-      role: req.body.role
-    };
-
-    const existingUsername = await User.findOne({
-      username: userData.username
+    const existingUser = await User.findOne({
+      username: username
     });
 
-    if (existingUsername) {
-      return res.status(400).json({
-        message: 'Username already exists.'
-      });
-    }
+    if (existingUser) { return res.json({ result: false, message: 'Username already exists.' }); }
 
-    const newUser = new User(userData);
-    const savedUser = await newUser.save();
+    const hashedPassword = await hashPassword(password);
+
+    const userData = {
+      email: email,
+      username: username.toLowerCase(),
+      password: hashedPassword,      
+    };
+
+    const savedUser = await new User(userData).save();
 
     if (savedUser) {
       const token = createToken(savedUser);
       const decodedToken = jwtDecode(token);
       const expiresAt = decodedToken.exp;
 
-      const { username, role, id, created, profilePhoto } = savedUser;
+      const { username, id, created, profilePhoto } = savedUser;
       const userInfo = {
         username,
-        role,
         id,
         created,
         profilePhoto
@@ -61,6 +55,7 @@ exports.signup = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error)
     return res.status(400).json({
       message: 'There was a problem creating your account.'
     });
