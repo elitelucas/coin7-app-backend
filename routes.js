@@ -28,6 +28,9 @@ router.post('/mining/stop', maincontroller.mining_stop);
 router.post('/mining/get', maincontroller.mining_get);
 
 router.post('/mlm/set_referrer', maincontroller.set_referrer);
+router.post('/mlm/get_numberofreferees', maincontroller.getNumberofReferees);
+router.post('/mlm/get_refereesbylevel', maincontroller.getRefereesbyLevel);
+router.post('/mlm/get_rewardbyreferee', maincontroller.getRewardbyReferee);
 
 module.exports = (app) => {
   app.use('/api', router);

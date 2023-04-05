@@ -18,12 +18,9 @@ exports.ping = async (req, res) => {
 
 exports.temp = async (req, res) => {
     try {
-        // var ddd = new Advertise({ title: 'cc' })
-        // await ddd.save();
+        var xxx = await _getRefereesByLevel('642d0d8840fb0a1168025ada', 1);
 
-        console.log(LEVELS);
-
-        return res.json({ result: true, data: LEVELS })
+        return res.json({ result: true, data: xxx })
     } catch (error) {
         return res.json({ result: false, message: error.message })
     }
@@ -97,6 +94,57 @@ exports.set_referrer = async (req, res) => {
         await User.updateOne({ _id: user_id }, { referrer_id: referrerData.id }, { upsert: true });
 
         return res.json({ result: true, data: 'done' })
+    } catch (error) {
+        return res.json({ result: false, message: error.message })
+    }
+}
+const _getRefereesByLevel = async (user_id, level) => {
+    let referees = [];
+    for (var i = 1; i <= level; i++) {
+        let uplevelReferees = [];
+        if (i == 1) uplevelReferees = await User.find({ _id: user_id });
+        else uplevelReferees = JSON.parse(JSON.stringify(referees));
+
+        let uplevelReferees_id = [];
+        uplevelReferees.map((item) => uplevelReferees_id.push(item.id))
+
+        referees = await User.find({ referrer_id: { $in: uplevelReferees_id } });
+    }
+    return referees;
+}
+
+
+exports.getNumberofReferees = async (req, res) => {
+    try {
+        var { user_id } = req.body
+        let count_of_referees_by_level = [];
+        for (var level = 1; level <= LEVELS; level++) {
+            var referees = await _getRefereesByLevel(user_id, level);
+            var count = referees.length || 0;
+            count_of_referees_by_level.push(count)
+        }
+        return res.json({ result: true, data: count_of_referees_by_level })
+    } catch (error) {
+        return res.json({ result: false, message: error.message })
+    }
+}
+
+exports.getRefereesbyLevel = async (req, res) => {
+    try {
+        var { user_id, level } = req.body
+        var referees = await _getRefereesByLevel(user_id, level);
+        return res.json({ result: true, data: referees })
+    } catch (error) {
+        return res.json({ result: false, message: error.message })
+    }
+}
+
+exports.getRewardbyReferee = async (req, res) => {
+    try {
+        var { user_id, referee_id } = req.body
+        var reward = 0;
+
+        return res.json({ result: true, data: reward })
     } catch (error) {
         return res.json({ result: false, message: error.message })
     }
