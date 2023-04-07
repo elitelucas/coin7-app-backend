@@ -11,6 +11,7 @@ const mySchema = new Schema(
         },
         deposit_amount: { type: Number },
         reward_amount: { type: Number },
+        type: { type: String },
     },
     { timestamps: true }
 );

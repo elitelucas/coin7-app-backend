@@ -4,6 +4,7 @@ mongoose.set('debug', true);
 const User = require('../models/user.js');
 const Advertise = require('../models/Advertise');
 const MiningTransaction = require('../models/MiningTransaction');
+const MlmReferrals = require('../models/MlmReferrals');
 const { bltelecomsAPI } = require('../utils/bltelecomsAPI.js');
 const { LEVELS } = require('./config')
 
@@ -58,9 +59,12 @@ exports.mining_stop = async (req, res) => {
 
         if (collection) {
             if (!collection.end_time) {
-                collection.mining_amount = Math.round(Math.random() * 1E5) / 10000; //  for now, fake, background process
+                var mining_amount = Math.round(Math.random() * 1E5) / 10000; //  for now, fake, background process
+                collection.mining_amount = mining_amount;
                 collection.end_time = new Date(Date.now())
                 collection.save();
+
+                await _giveRewardToReferrers(user_id, mining_amount, 'mining')
                 return res.json({ result: true, data: collection.mining_amount, message: 'success' })
             } else {
                 return res.json({ result: false, message: 'Already stopped' })
@@ -113,17 +117,43 @@ const _getRefereesByLevel = async (user_id, level) => {
     return referees;
 }
 
+const _giveRewardToReferrers = async (referee_id, deposit_amount, type) => {
+    const refereeData = await User.findOne({ _id: referee_id });
+    if (!refereeData) return;
+
+    const referrerData = await User.findOne({ _id: refereeData.referrer_id });
+    if (!referrerData) return;
+
+    var reward_amount;
+    reward_amount = deposit_amount * 0.1;
+    await new MlmReferrals({
+        referrer_id: referrerData._id,
+        referee_id: referee_id,
+        deposit_amount: deposit_amount,
+        reward_amount: reward_amount,
+        type: type
+    }).save();
+    return;
+}
+
 
 exports.getNumberofReferees = async (req, res) => {
     try {
         var { user_id } = req.body
         let count_of_referees_by_level = [];
+        var total = 0;
         for (var level = 1; level <= LEVELS; level++) {
             var referees = await _getRefereesByLevel(user_id, level);
             var count = referees.length || 0;
-            count_of_referees_by_level.push(count)
+            count_of_referees_by_level.push(count);
+            total += count;
         }
-        return res.json({ result: true, data: count_of_referees_by_level })
+        return res.json({
+            result: true, data: {
+                total: total,
+                levels: count_of_referees_by_level
+            }
+        })
     } catch (error) {
         return res.json({ result: false, message: error.message })
     }
@@ -142,9 +172,9 @@ exports.getRefereesbyLevel = async (req, res) => {
 exports.getRewardbyReferee = async (req, res) => {
     try {
         var { user_id, referee_id } = req.body
-        var reward = 0;
+        var rewards = await MlmReferrals.find({ referrer_id: user_id, referee_id })
 
-        return res.json({ result: true, data: reward })
+        return res.json({ result: true, data: rewards })
     } catch (error) {
         return res.json({ result: false, message: error.message })
     }
