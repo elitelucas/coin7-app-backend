@@ -21,14 +21,14 @@
         box-sizing: border-box;
         backdrop-filter: blur(10px);
       }
-      #input {
+      input {
         border: none;
         padding: 0 1rem;
         flex-grow: 1;
         border-radius: 2rem;
         margin: 0.25rem;
       }
-      #input:focus {
+      input:focus {
         outline: none;
       }
       #form > button {
@@ -56,7 +56,11 @@
   </head>
   <body>
     <ul id="messages"></ul>
-    <form id="form" action=""><input id="input" autocomplete="off" /><button>Send</button></form>
+    <form id="form" action="">
+      <input id="user_id" autocomplete="off" placeholder="user_id" />
+      <input id="mining_id" autocomplete="off" placeholder="mining_id" />
+      <button>Send</button>
+    </form>
   </body>
 </html>
 
@@ -67,18 +71,21 @@
     console.log(data);
     var ul = document.getElementById('messages');
     var li = document.createElement('li');
-    li.appendChild(document.createTextNode('mining: '+ data));
+    li.appendChild(document.createTextNode('mining: ' + data));
     ul.appendChild(li);
   });
 
   var form = document.getElementById('form');
-  var input = document.getElementById('input');
+  var user_id = document.getElementById('user_id');
+  var mining_id = document.getElementById('mining_id');
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    if (input.value) {
-      socket.emit('message', input.value);
-      input.value = '';
+    if (user_id.value && mining_id.value) {
+      socket.emit('init', {
+        user_id: user_id.value,
+        mining_id: mining_id.value
+      });    
     }
   });
 </script>

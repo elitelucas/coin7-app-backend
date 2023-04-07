@@ -5,7 +5,7 @@ const Advertise = require('../models/Advertise');
 const MiningTransaction = require('../models/MiningTransaction');
 const MlmReferrals = require('../models/MlmReferrals');
 const { LEVELS } = require('./config')
-
+const { addProcess, endProcess, getMinedAmount } = require('../job/mining')
 
 exports.ping = async (req, res) => {
     try {
@@ -30,7 +30,7 @@ exports.mining_start = async (req, res) => {
     try {
         var { user_id } = req.body
 
-        let last_mining = await MiningTransaction.findOne({user_id}, {}, { sort: { createdAt: -1 } })
+        let last_mining = await MiningTransaction.findOne({ user_id }, {}, { sort: { createdAt: -1 } })
         if (last_mining &&
             new Date(last_mining.createdAt).getTime() + 24 * 60 * 60 * 1000 > new Date(Date.now()).getTime() //check if after 24 hr from last transaction
         ) {
@@ -44,6 +44,9 @@ exports.mining_start = async (req, res) => {
             start_time: new Date(Date.now())
         })
         /** Blockchain Code for Mining */
+        addProcess(user_id, data._id);
+
+
         return res.json({ result: true, data: data._id, message: 'mining_id' })
     } catch (error) {
         return res.json({ result: false, message: error.message })
@@ -57,13 +60,17 @@ exports.mining_stop = async (req, res) => {
 
         if (collection) {
             if (!collection.end_time) {
-                var mining_amount = Math.round(Math.random() * 1E5) / 10000; //  for now, fake, background process
-                collection.mining_amount = mining_amount;
-                collection.end_time = new Date(Date.now())
-                collection.save();
+                getMinedAmount(mining_id).then(async (mined_amount) => {
+                    endProcess(mining_id);
 
-                await _giveRewardToReferrers(user_id, mining_amount, 'mining')
-                return res.json({ result: true, data: collection.mining_amount, message: 'success' })
+                    var mining_amount = mined_amount;
+                    collection.mining_amount = mining_amount;
+                    collection.end_time = new Date(Date.now())
+                    collection.save();
+
+                    await _giveRewardToReferrers(user_id, mining_amount, 'mining')
+                    return res.json({ result: true, data: collection.mining_amount, message: 'success' })
+                });
             } else {
                 return res.json({ result: false, message: 'Already stopped' })
             }
