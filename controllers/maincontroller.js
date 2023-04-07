@@ -1,11 +1,9 @@
 const mongoose = require('mongoose');
-const axios = require('axios');
 mongoose.set('debug', true);
 const User = require('../models/user.js');
 const Advertise = require('../models/Advertise');
 const MiningTransaction = require('../models/MiningTransaction');
 const MlmReferrals = require('../models/MlmReferrals');
-const { bltelecomsAPI } = require('../utils/bltelecomsAPI.js');
 const { LEVELS } = require('./config')
 
 
@@ -32,7 +30,7 @@ exports.mining_start = async (req, res) => {
     try {
         var { user_id } = req.body
 
-        let last_mining = await MiningTransaction.findOne({}, {}, { sort: { createdAt: -1 } })
+        let last_mining = await MiningTransaction.findOne({user_id}, {}, { sort: { createdAt: -1 } })
         if (last_mining &&
             new Date(last_mining.createdAt).getTime() + 24 * 60 * 60 * 1000 > new Date(Date.now()).getTime() //check if after 24 hr from last transaction
         ) {

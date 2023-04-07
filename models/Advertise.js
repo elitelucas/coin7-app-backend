@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+var conn = require('../db/ad');
 const Schema = mongoose.Schema;
 
 const mySchema = new Schema(
@@ -10,4 +11,4 @@ const mySchema = new Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model('advertise', mySchema);
+module.exports = conn.model('advertise', mySchema);

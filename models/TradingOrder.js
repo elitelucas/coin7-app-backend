@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+var conn = require('../db/wallet');
 const Schema = mongoose.Schema;
 
 const mySchema = new Schema(
@@ -16,4 +17,4 @@ const mySchema = new Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model('trading_order', mySchema);
+module.exports = conn.model('trading_order', mySchema);

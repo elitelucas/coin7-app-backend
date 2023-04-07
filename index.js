@@ -8,8 +8,8 @@ const connect = url => {
 
 if (require.main === module) {
 
-  connect(config.db.prod);
-  mongoose.connection.on('error', console.log);
+  // connect(config.db.prod);
+  // mongoose.connection.on('error', console.log);
 }
 
 module.exports = { connect };

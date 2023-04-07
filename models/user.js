@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+var conn = require('../db/main');
+
 const Schema = mongoose.Schema;
 
 const userModel = new Schema({
@@ -26,4 +28,4 @@ userModel.options.toJSON.transform = (doc, ret) => {
   return obj;
 };
 
-module.exports = mongoose.model('user', userModel);
+module.exports = conn.model('user', userModel);
