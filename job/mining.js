@@ -9,7 +9,7 @@ var mining_per_second;
 
 (async () => {
     let row = await AdminSetting.findOne({ key: 'mining_per_second' });
-    mining_per_second = row.value ? Number(row.value) : 0;
+    mining_per_second = row ? Number(row.value) : 0;
 })();
 
 exports.initMining = async () => {
