@@ -44,11 +44,11 @@ exports.mining_start = async (req, res) => {
 
         let last_mining = await MiningTransaction.findOne({ user_id }, {}, { sort: { createdAt: -1 } })
 
-        // if (last_mining &&
-        //     new Date(last_mining.createdAt).getTime() + 24 * 60 * 60 * 1000 > new Date(Date.now()).getTime() //check if after 24 hr from last transaction
-        // ) {
-        //     return res.json({ result: false, message: 'Limit is 24hr' })
-        // }
+        if (last_mining &&
+            new Date(last_mining.createdAt).getTime() + 24 * 60 * 60 * 1000 > new Date(Date.now()).getTime() //check if after 24 hr from last transaction
+        ) {
+            return res.json({ result: false, message: 'Limit is 24hr' })
+        }
 
         var mining_hash = Math.round(Math.random() * 1E9); // for now, fake
         let data = await MiningTransaction.create({
