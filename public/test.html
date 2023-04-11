@@ -58,7 +58,7 @@
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="user_id" autocomplete="off" placeholder="user_id" />
-      <input id="mining_id" autocomplete="off" placeholder="mining_id" />
+      <!-- <input id="mining_id" autocomplete="off" placeholder="mining_id" /> -->
       <button>Send</button>
     </form>
   </body>
@@ -77,14 +77,13 @@
 
   var form = document.getElementById('form');
   var user_id = document.getElementById('user_id');
-  var mining_id = document.getElementById('mining_id');
+  // var mining_id = document.getElementById('mining_id');
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    if (user_id.value && mining_id.value) {
-      socket.emit('init', {
-        user_id: user_id.value,
-        mining_id: mining_id.value
+    if (user_id.value) {
+      socket.emit('init_mining_connection', {
+        user_id: user_id.value
       });    
     }
   });

@@ -2,8 +2,15 @@
 const User = require('../models/user.js');
 const MiningTransaction = require('../models/MiningTransaction');
 const MlmReferrals = require('../models/MlmReferrals');
+const AdminSetting = require('../models/AdminSetting.js');
 
 var processes = []; //{ user_id, mining_id, amount, time}
+var mining_per_second;
+
+(async () => {
+    let row = await AdminSetting.findOne({ key: 'mining_per_second' });
+    mining_per_second = row.value ? Number(row.value) : 0;
+})();
 
 exports.initMining = async () => {
     setInterval(() => {
@@ -12,7 +19,7 @@ exports.initMining = async () => {
 
         processes.map(async (item) => {
             /** TO DO - Blockchain code for mining */
-            item.amount = Math.random() * 1E-4 + Number(item.amount)
+            item.amount = mining_per_second + Number(item.amount)
             item.time++;
 
             if (item.time > 60 * 60 * 24) { //after 24hr from start
@@ -65,8 +72,12 @@ exports.endProcess = async (mining_id) => {
     if (index >= 0)
         processes.splice(index, 1);
 }
+exports.getMiningIDByUserID = (user_id) => {
+    var process = processes.find((item) => item.user_id == user_id);
+    return process ? process.mining_id : null;
+}
 
-exports.getMinedAmount = async (mining_id) => {
+exports.getMinedAmount = (mining_id) => {
     var process = processes.find((item) => item.mining_id == mining_id);
     return process ? process.amount : 0;
 }

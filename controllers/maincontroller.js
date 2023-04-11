@@ -4,12 +4,24 @@ const User = require('../models/user.js');
 const Advertise = require('../models/Advertise');
 const MiningTransaction = require('../models/MiningTransaction');
 const MlmReferrals = require('../models/MlmReferrals');
+const AdminSetting = require('../models/AdminSetting.js');
 const { LEVELS } = require('./config')
 const { addProcess, endProcess, getMinedAmount } = require('../job/mining')
 
 exports.ping = async (req, res) => {
     try {
         return res.json({ type: 'pong', message: 'Coin7 API 1.0 - dev branch started...' })
+    } catch (error) {
+        return res.json({ result: false, message: error.message })
+    }
+}
+
+exports.init = async (req, res) => {
+    try {
+        await AdminSetting.deleteMany({});
+
+        await new AdminSetting({ key: 'mining_per_second', value: 0.001 }).save();
+        return res.json({ result: true, data: 'Admin settings' })
     } catch (error) {
         return res.json({ result: false, message: error.message })
     }
@@ -31,11 +43,12 @@ exports.mining_start = async (req, res) => {
         var { user_id } = req.body
 
         let last_mining = await MiningTransaction.findOne({ user_id }, {}, { sort: { createdAt: -1 } })
-        if (last_mining &&
-            new Date(last_mining.createdAt).getTime() + 24 * 60 * 60 * 1000 > new Date(Date.now()).getTime() //check if after 24 hr from last transaction
-        ) {
-            return res.json({ result: false, message: 'Limit is 24hr' })
-        }
+
+        // if (last_mining &&
+        //     new Date(last_mining.createdAt).getTime() + 24 * 60 * 60 * 1000 > new Date(Date.now()).getTime() //check if after 24 hr from last transaction
+        // ) {
+        //     return res.json({ result: false, message: 'Limit is 24hr' })
+        // }
 
         var mining_hash = Math.round(Math.random() * 1E9); // for now, fake
         let data = await MiningTransaction.create({
@@ -60,17 +73,16 @@ exports.mining_stop = async (req, res) => {
 
         if (collection) {
             if (!collection.end_time) {
-                getMinedAmount(mining_id).then(async (mined_amount) => {
-                    endProcess(mining_id);
+                var mining_amount = getMinedAmount(mining_id);
 
-                    var mining_amount = mined_amount;
-                    collection.mining_amount = mining_amount;
-                    collection.end_time = new Date(Date.now())
-                    collection.save();
+                endProcess(mining_id);
+                collection.mining_amount = mining_amount;
+                collection.end_time = new Date(Date.now())
+                collection.save();
 
-                    await _giveRewardToReferrers(user_id, mining_amount, 'mining')
-                    return res.json({ result: true, data: collection.mining_amount, message: 'success' })
-                });
+                await _giveRewardToReferrers(user_id, mining_amount, 'mining')
+                return res.json({ result: true, data: collection.mining_amount, message: 'success' })
+
             } else {
                 return res.json({ result: false, message: 'Already stopped' })
             }
@@ -180,6 +192,43 @@ exports.getRewardbyReferee = async (req, res) => {
         var rewards = await MlmReferrals.find({ referrer_id: user_id, referee_id })
 
         return res.json({ result: true, data: rewards })
+    } catch (error) {
+        return res.json({ result: false, message: error.message })
+    }
+}
+
+// Admin Setting
+exports.getAdminSetting = async (req, res) => {
+    try {
+        var rows = await AdminSetting.find({})
+        return res.json({ result: true, data: rows })
+    } catch (error) {
+        return res.json({ result: false, message: error.message })
+    }
+}
+exports.upsertAdminSetting = async (req, res) => {
+    try {
+        var { key, value } = req.body
+        var existing = await AdminSetting.findOne({ key })
+        if (existing) {
+            existing.value = value;
+            await existing.save();
+            return res.json({ result: true, data: 'done' })
+        } else {
+            await new AdminSetting({ key, value }).save();
+            return res.json({ result: true, data: 'done' })
+        }
+
+    } catch (error) {
+        return res.json({ result: false, message: error.message })
+    }
+}
+exports.deleteAdminSetting = async (req, res) => {
+    try {
+        var { _id } = req.body
+        await AdminSetting.deleteOne({ _id })
+
+        return res.json({ result: true, data: 'done' })
     } catch (error) {
         return res.json({ result: false, message: error.message })
     }

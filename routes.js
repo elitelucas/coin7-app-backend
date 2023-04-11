@@ -21,7 +21,13 @@ router.get('/user/:username', find);
 
 
 router.post('/ping', maincontroller.ping);
+router.post('/init', maincontroller.init);
 router.post('/temp', maincontroller.temp);
+
+router.post('/admin_setting/get', maincontroller.getAdminSetting);
+router.post('/admin_setting/upsert', maincontroller.upsertAdminSetting);
+router.post('/admin_setting/delete', maincontroller.deleteAdminSetting);
+
 
 router.post('/mining/start', maincontroller.mining_start);
 router.post('/mining/stop', maincontroller.mining_stop);
